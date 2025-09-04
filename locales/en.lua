@@ -1,0 +1,11 @@
+Lang = {}
+Lang.OpenStorage = 'Open Storage'
+Lang.UpgradeStorage = 'Upgrade Storage'
+Lang.CurrentSlots = 'Current Slots: %s'
+Lang.MaxSlots = 'Max Slots: %s'
+Lang.EnterSlots = 'How many slots to add?'
+Lang.NotEnoughFunds = 'Not enough funds.'
+Lang.AlreadyMax = 'Storage is already at maximum capacity.'
+Lang.Upgraded = 'Storage upgraded: +%s slots for $%s'
+Lang.StorageTitle = 'Town Storage'
+Lang.Choose = 'What do you need?'
