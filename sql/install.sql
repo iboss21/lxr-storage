@@ -1,4 +1,4 @@
--- Town Storage (HHRP) — per-character, per-town slot tracking
+-- Town Storage  — per-character, per-town slot tracking
 CREATE TABLE IF NOT EXISTS `biggies_storage` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `charidentifier` VARCHAR(60) NOT NULL,
