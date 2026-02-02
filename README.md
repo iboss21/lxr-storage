@@ -160,7 +160,17 @@ Config.Storage = {
     PricePerSlot    = 0.30,     -- Price per slot
 }
 
-Config.CurrencyName = 'cash'    -- 'cash' or 'gold'
+-- Item-based currency for LXR/RSG
+Config.ItemCurrency = {
+    Enabled       = true,        -- Enable item-based currency
+    DollarItem    = 'dollar',    -- Item name for dollars
+    CentsItem     = 'cents',     -- Item name for cents
+    CentsPerDollar = 100,        -- 100 cents = 1 dollar
+}
+
+-- Traditional currency for VORP
+Config.CurrencyType = 0           -- 0 = cash, 1 = gold (VORP only)
+Config.CurrencyName = 'cash'      -- 'cash' or 'gold' (VORP only)
 ```
 
 ## ████████████████████████████████████████████████████████████████████████████████████████
@@ -253,9 +263,20 @@ Config.Storage = {
 
 ### Change Currency
 
+**For LXR-Core / RSG-Core (Item-Based):**
+```lua
+-- Use gold items instead of dollars/cents
+Config.ItemCurrency = {
+    Enabled    = true,
+    UseGold    = true,           -- Switch to gold-based economy
+    GoldItem   = 'goldbar',      -- Gold item name
+}
+```
+
+**For VORP (Traditional Currency):**
 ```lua
 Config.CurrencyType = 1           -- Gold instead of cash
-Config.CurrencyName = 'gold'      -- For LXR/RSG frameworks
+Config.CurrencyName = 'gold'      -- For VORP framework
 ```
 
 ### Localization
@@ -332,9 +353,12 @@ Lang.OpenStorage = 'Abrir Almacenamiento'
 - ✅ Ensure player is close enough to NPC
 
 **❌ Upgrades not working**
-- ✅ Check player has enough money
-- ✅ Verify currency type configuration matches framework
+- ✅ Check player has enough money (dollars/cents items for LXR/RSG, currency for VORP)
+- ✅ Verify currency configuration matches your framework:
+  - LXR/RSG: Check Config.ItemCurrency settings and verify items exist
+  - VORP: Check Config.CurrencyType and Config.CurrencyName
 - ✅ Check database connection
+- ✅ For LXR/RSG: Ensure player has 'dollar' and/or 'cents' items in inventory
 
 **❌ NPCs not spawning**
 - ✅ Verify `Config.General.EnableNPCs = true`

@@ -295,17 +295,34 @@ Config.Storage = {
 
 ### 3. Currency Configuration
 
-**For Cash Currency:**
+LXR-Storage supports different currency systems depending on your framework:
+
+**For VORP Framework (Traditional Currency):**
 ```lua
-Config.CurrencyType = 0           -- VORP: 0 = cash
-Config.CurrencyName = 'cash'      -- LXR/RSG: 'cash'
+Config.CurrencyType = 0           -- 0 = cash, 1 = gold
+Config.CurrencyName = 'cash'      -- 'cash' or 'gold'
 ```
 
-**For Gold Currency:**
+**For LXR-Core / RSG-Core (Item-Based Currency):**
 ```lua
-Config.CurrencyType = 1           -- VORP: 1 = gold
-Config.CurrencyName = 'gold'      -- LXR/RSG: 'gold'
+Config.ItemCurrency = {
+    Enabled       = true,        -- Enable item-based currency
+    DollarItem    = 'dollar',    -- Item name for dollars
+    CentsItem     = 'cents',     -- Item name for cents
+    CentsPerDollar = 100,        -- 100 cents = 1 dollar
+    UseGold       = false,       -- Set to true for gold-based economy
+    GoldItem      = 'goldbar',   -- Item name for gold (if UseGold = true)
+}
 ```
+
+**Important:** LXR-Core and RSG-Core use money as inventory items. The system automatically:
+- Counts dollars and cents from player inventory
+- Converts between dollars and cents when making change
+- Removes the correct combination of items when purchasing upgrades
+
+**Example: Player has 5 dollars and 50 cents, upgrade costs $3.25:**
+- System removes 3 dollars and 25 cents
+- Player is left with 2 dollars and 25 cents
 
 ### 4. General Settings
 
@@ -638,12 +655,13 @@ Solution:
 
 ```
 Solution:
-1. Check player has enough money
-2. Verify currency type matches framework:
-   - Config.CurrencyName for LXR/RSG
-   - Config.CurrencyType for VORP
+1. Check player has enough money (dollars/cents items for LXR/RSG, currency value for VORP)
+2. Verify currency configuration:
+   - Config.ItemCurrency settings for LXR/RSG (item-based)
+   - Config.CurrencyType and Config.CurrencyName for VORP (traditional)
 3. Ensure player isn't already at max slots
 4. Check console for server-side errors
+5. For LXR/RSG: Verify player has the currency items (dollar, cents) in inventory
 5. Verify database connection
 ```
 

@@ -84,8 +84,10 @@ Framework.CloseMenu()         -- Close menu systems
 -- Server-Side
 Framework.GetPlayer()         -- Get player object
 Framework.GetIdentifier()     -- Get character identifier
-Framework.RemoveMoney()       -- Remove money from player
-Framework.GetMoney()          -- Get player's money
+Framework.GetTotalMoneyValue() -- Get player's total money value (unified)
+Framework.RemoveMoneyAsItems() -- Remove money (handles items for LXR/RSG, currency for VORP)
+Framework.GetItemCount()      -- Get item count (LXR/RSG only)
+Framework.RemoveItem()        -- Remove items (LXR/RSG only)
 Framework.OpenInventory()     -- Open storage inventory
 Framework.UpdateInventorySlots() -- Update inventory slot count
 ```
@@ -182,12 +184,12 @@ Manages all client-side interactions and visual elements:
     ├─ Player exists?
     ├─ Valid slot amount?
     ├─ Within max limit?
-    ├─ Player has enough money?
+    ├─ Player has enough money/items?
     └─ No exploit attempts?
     ↓
 [Server] If valid:
     ├─ Calculate cost (slots × price_per_slot)
-    ├─ Framework.RemoveMoney() from player
+    ├─ Framework.RemoveMoneyAsItems() from player (handles items/currency)
     ├─ Update database with new slot count
     ├─ Update cache
     ├─ Send success notification → Client
@@ -220,7 +222,9 @@ Manages all client-side interactions and visual elements:
 ```
 
 **Layer 3: Framework Integration Security**
-- Uses official framework APIs for money operations
+- Uses official framework APIs for money/item operations
+- LXR/RSG: Item-based currency with automatic change-making
+- VORP: Traditional currency system
 - No direct database manipulation for player data
 - Character authentication through framework
 
@@ -331,7 +335,9 @@ PlayerSlotCache = {}
 Framework.Object = exports['lxr-core']:GetCoreObject()
 PlayerData = Framework.Object.Functions.GetPlayerData()
 Identifier = PlayerData.citizenid
-Money = PlayerData.money[moneyType]
+-- Money is item-based: 'dollar' and 'cents' items
+DollarCount = player.Functions.GetItemByName('dollar').amount
+CentsCount = player.Functions.GetItemByName('cents').amount
 ```
 
 **RSG-Core**
@@ -339,7 +345,9 @@ Money = PlayerData.money[moneyType]
 Framework.Object = exports['rsg-core']:GetCoreObject()
 PlayerData = Framework.Object.Functions.GetPlayerData()
 Identifier = PlayerData.citizenid
-Money = PlayerData.money[moneyType]
+-- Money is item-based: 'dollar' and 'cents' items
+DollarCount = player.Functions.GetItemByName('dollar').amount
+CentsCount = player.Functions.GetItemByName('cents').amount
 ```
 
 **VORP Core**
@@ -347,7 +355,7 @@ Money = PlayerData.money[moneyType]
 Framework.Object = exports.vorp_core:GetCore()
 Character = User.getUsedCharacter
 Identifier = Character.charIdentifier or Character.identifier
-Money = Character.money or Character.gold
+Money = Character.money or Character.gold -- Traditional currency
 ```
 
 ## ████████████████████████████████████████████████████████████████
@@ -430,17 +438,28 @@ end
 
 ### Currency Configuration
 
-**For LXR-Core/RSG-Core:**
+**For LXR-Core/RSG-Core (Item-Based Currency):**
 ```lua
-Config.CurrencyName = 'cash'  -- or 'gold'
--- Uses framework's money system directly
+Config.ItemCurrency = {
+    Enabled       = true,        -- Enable item-based currency
+    DollarItem    = 'dollar',    -- Item name for dollars
+    CentsItem     = 'cents',     -- Item name for cents
+    CentsPerDollar = 100,        -- 100 cents = 1 dollar
+    UseGold       = false,       -- Set to true for gold-based economy
+    GoldItem      = 'goldbar',   -- Item name for gold (if UseGold = true)
+}
+-- Money is stored as inventory items
+-- System automatically handles dollar/cent conversion
+-- Makes change when needed (e.g., removing $3.25 from player with 5 dollars)
 ```
 
-**For VORP Core:**
+**For VORP Core (Traditional Currency):**
 ```lua
 Config.CurrencyType = 0  -- Cash
 Config.CurrencyType = 1  -- Gold
--- Maps to VORP's currency system
+Config.CurrencyName = 'cash'  -- or 'gold'
+-- Maps to VORP's traditional currency system
+-- Money is a property value, not an item
 ```
 
 ## ████████████████████████████████████████████████████████████████
