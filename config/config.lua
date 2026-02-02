@@ -187,12 +187,28 @@ Config.Storage = {
 
 --[[
     Currency Types:
-    - For VORP:      0 = cash, 1 = gold
-    - For LXR/RSG:   'cash' = cash, 'gold' = gold (set in CurrencyName)
+    - For VORP:      0 = cash, 1 = gold (traditional currency system)
+    - For LXR/RSG:   Item-based currency system using inventory items
+    
+    LXR-Core and RSG-Core use money as inventory items:
+    - Cash is represented by item "dollar" (1 dollar = 100 cents)
+    - Small change is represented by item "cents"
+    
+    The system automatically converts between dollars and cents when needed.
 ]]
 
-Config.CurrencyType = 0           -- 0 or 'cash' for cash | 1 or 'gold' for gold
-Config.CurrencyName = 'cash'      -- Used by LXR-Core/RSG-Core ('cash' or 'gold')
+Config.CurrencyType = 0           -- 0 or 'cash' for cash | 1 or 'gold' for gold (VORP only)
+Config.CurrencyName = 'cash'      -- Used by VORP ('cash' or 'gold')
+
+-- Item-based currency configuration (LXR-Core / RSG-Core)
+Config.ItemCurrency = {
+    Enabled       = true,        -- Enable item-based currency for LXR/RSG
+    DollarItem    = 'dollar',    -- Item name for dollars
+    CentsItem     = 'cents',     -- Item name for cents
+    CentsPerDollar = 100,        -- Conversion rate (100 cents = 1 dollar)
+    UseGold       = false,       -- Set to true to use gold items instead
+    GoldItem      = 'goldbar',   -- Item name for gold (if UseGold = true)
+}
 
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 -- █████ INTERACTION KEYS

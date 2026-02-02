@@ -281,6 +281,141 @@ if IsDuplicityVersion() then -- Server side only
         return 0
     end
     
+    -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+    -- █████ ITEM-BASED CURRENCY FUNCTIONS (LXR-Core / RSG-Core)
+    -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+    
+    function Framework.GetItemCount(source, itemName)
+        if Framework.Name == 'lxr-core' then
+            local player = Framework.GetPlayer(source)
+            if player then
+                local item = player.Functions.GetItemByName(itemName)
+                return item and item.amount or 0
+            end
+        elseif Framework.Name == 'rsg-core' then
+            local player = Framework.GetPlayer(source)
+            if player then
+                local item = player.Functions.GetItemByName(itemName)
+                return item and item.amount or 0
+            end
+        elseif Framework.Name == 'vorp' then
+            -- VORP doesn't use item-based currency
+            return 0
+        end
+        return 0
+    end
+    
+    function Framework.RemoveItem(source, itemName, amount)
+        if Framework.Name == 'lxr-core' then
+            local player = Framework.GetPlayer(source)
+            if player then
+                return player.Functions.RemoveItem(itemName, amount)
+            end
+        elseif Framework.Name == 'rsg-core' then
+            local player = Framework.GetPlayer(source)
+            if player then
+                return player.Functions.RemoveItem(itemName, amount)
+            end
+        elseif Framework.Name == 'vorp' then
+            -- VORP doesn't use item-based currency
+            return false
+        end
+        return false
+    end
+    
+    -- Get total money value in cents/smallest unit for item-based systems
+    function Framework.GetTotalMoneyValue(source)
+        if not Config.ItemCurrency or not Config.ItemCurrency.Enabled then
+            return Framework.GetMoney(source, Config.CurrencyName)
+        end
+        
+        if Framework.Name == 'lxr-core' or Framework.Name == 'rsg-core' then
+            if Config.ItemCurrency.UseGold then
+                -- Gold-based: just return gold count
+                return Framework.GetItemCount(source, Config.ItemCurrency.GoldItem)
+            else
+                -- Dollar/Cents based: convert to total cents
+                local dollars = Framework.GetItemCount(source, Config.ItemCurrency.DollarItem)
+                local cents = Framework.GetItemCount(source, Config.ItemCurrency.CentsItem)
+                return (dollars * Config.ItemCurrency.CentsPerDollar) + cents
+            end
+        else
+            -- VORP uses traditional currency
+            return Framework.GetMoney(source, Config.CurrencyName)
+        end
+    end
+    
+    -- Remove money from player using item-based system
+    function Framework.RemoveMoneyAsItems(source, amountInCents)
+        if not Config.ItemCurrency or not Config.ItemCurrency.Enabled then
+            return Framework.RemoveMoney(source, amountInCents, Config.CurrencyName)
+        end
+        
+        if Framework.Name == 'lxr-core' or Framework.Name == 'rsg-core' then
+            if Config.ItemCurrency.UseGold then
+                -- Gold-based: remove gold items
+                return Framework.RemoveItem(source, Config.ItemCurrency.GoldItem, amountInCents)
+            else
+                -- Dollar/Cents based: remove appropriate combination
+                local dollarsNeeded = math.floor(amountInCents / Config.ItemCurrency.CentsPerDollar)
+                local centsNeeded = amountInCents % Config.ItemCurrency.CentsPerDollar
+                
+                local dollars = Framework.GetItemCount(source, Config.ItemCurrency.DollarItem)
+                local cents = Framework.GetItemCount(source, Config.ItemCurrency.CentsItem)
+                
+                -- Check if player has enough money
+                local totalValue = (dollars * Config.ItemCurrency.CentsPerDollar) + cents
+                if totalValue < amountInCents then
+                    return false
+                end
+                
+                -- Try to remove exact amounts first
+                if dollars >= dollarsNeeded and cents >= centsNeeded then
+                    if dollarsNeeded > 0 then
+                        Framework.RemoveItem(source, Config.ItemCurrency.DollarItem, dollarsNeeded)
+                    end
+                    if centsNeeded > 0 then
+                        Framework.RemoveItem(source, Config.ItemCurrency.CentsItem, centsNeeded)
+                    end
+                    return true
+                end
+                
+                -- Need to make change - remove all dollars/cents and give back change
+                local totalCents = (dollars * Config.ItemCurrency.CentsPerDollar) + cents
+                local remaining = totalCents - amountInCents
+                
+                -- Remove all current money
+                if dollars > 0 then
+                    Framework.RemoveItem(source, Config.ItemCurrency.DollarItem, dollars)
+                end
+                if cents > 0 then
+                    Framework.RemoveItem(source, Config.ItemCurrency.CentsItem, cents)
+                end
+                
+                -- Give back change
+                if remaining > 0 then
+                    local changeDollars = math.floor(remaining / Config.ItemCurrency.CentsPerDollar)
+                    local changeCents = remaining % Config.ItemCurrency.CentsPerDollar
+                    
+                    local player = Framework.GetPlayer(source)
+                    if player then
+                        if changeDollars > 0 then
+                            player.Functions.AddItem(Config.ItemCurrency.DollarItem, changeDollars)
+                        end
+                        if changeCents > 0 then
+                            player.Functions.AddItem(Config.ItemCurrency.CentsItem, changeCents)
+                        end
+                    end
+                end
+                
+                return true
+            end
+        else
+            -- VORP uses traditional currency
+            return Framework.RemoveMoney(source, amountInCents, Config.CurrencyName)
+        end
+    end
+    
     function Framework.OpenInventory(source, inventoryId, slots)
         if not Framework.Inventory then
             return false

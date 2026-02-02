@@ -299,15 +299,28 @@ RegisterNetEvent('lxr-storage:server:upgradeSlots', function(townKey, amount)
         amount = maxAdd 
     end
     
-    local cost = math.floor((amount * Config.Storage.PricePerSlot) * 100 + 0.5) / 100.0
+    -- Calculate cost based on currency system
+    local cost, costInCents
+    if Config.ItemCurrency and Config.ItemCurrency.Enabled and (Framework.Name == 'lxr-core' or Framework.Name == 'rsg-core') then
+        -- Item-based currency: calculate in cents
+        local costInDollars = amount * Config.Storage.PricePerSlot
+        costInCents = math.floor(costInDollars * Config.ItemCurrency.CentsPerDollar + 0.5)
+        cost = costInDollars -- For display purposes
+    else
+        -- Traditional currency (VORP)
+        cost = math.floor((amount * Config.Storage.PricePerSlot) * 100 + 0.5) / 100.0
+        costInCents = cost
+    end
     
-    local playerMoney = Framework.GetMoney(src, Config.CurrencyName)
-    if playerMoney < cost then
+    -- Check if player has enough money
+    local playerMoney = Framework.GetTotalMoneyValue(src)
+    if playerMoney < costInCents then
         TriggerClientEvent('lxr-storage:client:notify', src, Lang.NotEnoughFunds, 'error')
         return
     end
     
-    local removed = Framework.RemoveMoney(src, cost, Config.CurrencyName)
+    -- Remove money from player
+    local removed = Framework.RemoveMoneyAsItems(src, costInCents)
     if not removed then
         TriggerClientEvent('lxr-storage:client:notify', src, Lang.NotEnoughFunds, 'error')
         return
