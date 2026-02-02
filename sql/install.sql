@@ -1,8 +1,89 @@
--- Town Storage  — per-character, per-town slot tracking
-CREATE TABLE IF NOT EXISTS `biggies_storage` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `charidentifier` VARCHAR(60) NOT NULL,
-  `town_key` VARCHAR(64) NOT NULL,
-  `slots` INT NOT NULL DEFAULT 200,
-  UNIQUE KEY `uniq_char_town` (`charidentifier`, `town_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+--[[
+  ██╗     ██╗  ██╗██████╗       ███████╗████████╗ ██████╗ ██████╗  █████╗  ██████╗ ███████╗
+  ██║     ╚██╗██╔╝██╔══██╗      ██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗██╔══██╗██╔════╝ ██╔════╝
+  ██║      ╚███╔╝ ██████╔╝█████╗███████╗   ██║   ██║   ██║██████╔╝███████║██║  ███╗█████╗  
+  ██║      ██╔██╗ ██╔══██╗╚════╝╚════██║   ██║   ██║   ██║██╔══██╗██╔══██║██║   ██║██╔══╝  
+  ███████╗██╔╝ ██╗██║  ██║      ███████║   ██║   ╚██████╔╝██║  ██║██║  ██║╚██████╔╝███████╗
+  ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝      ╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+  ═══════════════════════════════════════════════════════════════════════════════════════════
+  🐺 LXR-Storage - Database Schema
+  ═══════════════════════════════════════════════════════════════════════════════════════════
+  
+  Database schema for LXR-Storage system.
+  This table tracks per-character, per-town storage slot capacities.
+  
+  ═══════════════════════════════════════════════════════════════════════════════════════════
+  🔹 Server Information
+  ═══════════════════════════════════════════════════════════════════════════════════════════
+  Server:      The Land of Wolves 🐺
+  Developer:   iBoss21 / The Lux Empire
+  Website:     https://www.wolves.land
+  ═══════════════════════════════════════════════════════════════════════════════════════════
+  📄 Copyright © 2024-2026 The Lux Empire | wolves.land
+  ═══════════════════════════════════════════════════════════════════════════════════════════
+]]
+
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+-- █████ LXR-STORAGE TABLE
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+
+--[[
+  Table Structure:
+  - id:              Auto-incrementing primary key
+  - charidentifier:  Character identifier (from framework)
+  - town_key:        Unique town identifier (e.g., 'valentine', 'stdenis')
+  - slots:           Current slot capacity for this character at this town
+  - last_upgrade:    Timestamp of last upgrade (for tracking/analytics)
+  - created_at:      Timestamp when record was created
+  
+  Indexes:
+  - PRIMARY KEY on id
+  - UNIQUE KEY on (charidentifier, town_key) to prevent duplicates
+  - INDEX on charidentifier for fast lookups
+  - INDEX on town_key for analytics queries
+]]
+
+CREATE TABLE IF NOT EXISTS `lxr_storage` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY,
+    `charidentifier` VARCHAR(60) NOT NULL COMMENT 'Character identifier from framework',
+    `town_key` VARCHAR(64) NOT NULL COMMENT 'Town identifier (e.g., valentine, stdenis)',
+    `slots` INT NOT NULL DEFAULT 200 COMMENT 'Current storage slot capacity',
+    `last_upgrade` TIMESTAMP NULL DEFAULT NULL COMMENT 'Last upgrade timestamp',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    
+    UNIQUE KEY `uniq_char_town` (`charidentifier`, `town_key`),
+    INDEX `idx_charidentifier` (`charidentifier`),
+    INDEX `idx_town_key` (`town_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='LXR-Storage per-character per-town slot tracking';
+
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+-- █████ MIGRATION FROM OLD TABLE (OPTIONAL)
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+
+--[[
+  If migrating from old biggies_storage or hhrp_town_storage tables, uncomment the following:
+  
+  -- Migrate from biggies_storage
+  INSERT INTO lxr_storage (charidentifier, town_key, slots, created_at)
+  SELECT charidentifier, town_key, slots, NOW()
+  FROM biggies_storage
+  WHERE NOT EXISTS (
+      SELECT 1 FROM lxr_storage 
+      WHERE lxr_storage.charidentifier = biggies_storage.charidentifier 
+      AND lxr_storage.town_key = biggies_storage.town_key
+  );
+  
+  -- Migrate from hhrp_town_storage
+  INSERT INTO lxr_storage (charidentifier, town_key, slots, created_at)
+  SELECT charidentifier, town_key, slots, NOW()
+  FROM hhrp_town_storage
+  WHERE NOT EXISTS (
+      SELECT 1 FROM lxr_storage 
+      WHERE lxr_storage.charidentifier = hhrp_town_storage.charidentifier 
+      AND lxr_storage.town_key = hhrp_town_storage.town_key
+  );
+]]
+
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+-- █████ END OF SCHEMA
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
