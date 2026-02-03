@@ -377,13 +377,14 @@ local function findNearestStorage()
     local ped = PlayerPedId()
     local pcoords = GetEntityCoords(ped)
     local nearestTown = nil
-    local nearestDist = Config.Keybind.MaxDistance
+    local nearestDist = math.huge
+    local maxDist = Config.Keybind.MaxDistance
     
     for _, town in ipairs(Config.Towns) do
         local c = town.coords
         if c and c.x and c.y and c.z then
             local dist = #(pcoords - vector3(c.x, c.y, c.z))
-            if dist <= nearestDist then
+            if dist < nearestDist and dist <= maxDist then
                 nearestDist = dist
                 nearestTown = town
             end
