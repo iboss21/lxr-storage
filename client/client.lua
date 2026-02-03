@@ -209,6 +209,7 @@ end
 local function openMainMenu(townKey, townLabel)
     closeAllMenus()
     
+    -- Request current slot information from server for display
     local elements = {
         { label = Lang.OpenStorage, value = 'open', desc = Lang.Choose },
         { label = Lang.UpgradeStorage, value = 'upgrade', desc = Lang.Choose },
@@ -370,6 +371,9 @@ end)
 -- █████ KEYBIND SYSTEM
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
+local keybindCooldown = 0
+local KEYBIND_COOLDOWN_MS = 1000 -- 1 second cooldown to prevent spam
+
 local function findNearestStorage()
     local ped = PlayerPedId()
     local pcoords = GetEntityCoords(ped)
@@ -387,7 +391,7 @@ local function findNearestStorage()
         end
     end
     
-    return nearestTown
+    return nearestTown, nearestDist
 end
 
 RegisterCommand(Config.Keybind.Command or 'openstorage', function()
@@ -395,13 +399,23 @@ RegisterCommand(Config.Keybind.Command or 'openstorage', function()
         return
     end
     
-    local nearestTown = findNearestStorage()
+    -- Check cooldown
+    local currentTime = GetGameTimer()
+    if currentTime - keybindCooldown < KEYBIND_COOLDOWN_MS then
+        return
+    end
+    keybindCooldown = currentTime
+    
+    local nearestTown, distance = findNearestStorage()
     
     if nearestTown then
-        DebugPrint(('Opening storage for %s via keybind'):format(nearestTown.key))
+        DebugPrint(('Opening storage for %s via keybind (distance: %.2fm)'):format(nearestTown.key, distance))
         openMainMenu(nearestTown.key, nearestTown.label)
     else
         Framework.Notify(Lang.NoNearbyStorage, 'error')
+        if Config.Debug.Enable then
+            DebugPrint('No storage location within keybind range')
+        end
     end
 end, false)
 
@@ -413,6 +427,13 @@ if Config.Keybind.Enabled then
         'keyboard',
         Config.Keybind.DefaultKey or 'K'
     )
+    
+    if Config.Debug.Enable then
+        CreateThread(function()
+            Wait(2000)
+            DebugPrint(('Keybind registered: Press %s to open nearby storage'):format(Config.Keybind.DefaultKey))
+        end)
+    end
 end
 
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
