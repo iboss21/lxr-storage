@@ -367,6 +367,55 @@ CreateThread(function()
 end)
 
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+-- █████ KEYBIND SYSTEM
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+
+local function findNearestStorage()
+    local ped = PlayerPedId()
+    local pcoords = GetEntityCoords(ped)
+    local nearestTown = nil
+    local nearestDist = Config.Keybind.MaxDistance or 5.0
+    
+    for _, town in ipairs(Config.Towns) do
+        local c = town.coords
+        if c and c.x and c.y and c.z then
+            local dist = #(pcoords - vector3(c.x, c.y, c.z))
+            if dist <= nearestDist then
+                nearestDist = dist
+                nearestTown = town
+            end
+        end
+    end
+    
+    return nearestTown
+end
+
+RegisterCommand(Config.Keybind.Command or 'openstorage', function()
+    if not Config.Keybind.Enabled then
+        return
+    end
+    
+    local nearestTown = findNearestStorage()
+    
+    if nearestTown then
+        DebugPrint(('Opening storage for %s via keybind'):format(nearestTown.key))
+        openMainMenu(nearestTown.key, nearestTown.label)
+    else
+        Framework.Notify(Lang.NoNearbyStorage, 'error')
+    end
+end, false)
+
+-- Register the keybind mapping (player can rebind this in their settings)
+if Config.Keybind.Enabled then
+    RegisterKeyMapping(
+        Config.Keybind.Command or 'openstorage',
+        Config.Keybind.Description or 'Open Nearby Storage',
+        'keyboard',
+        Config.Keybind.DefaultKey or 'K'
+    )
+end
+
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 -- █████ EVENT HANDLERS
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 

@@ -211,11 +211,20 @@ Config.ItemCurrency = {
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
--- █████ INTERACTION KEYS
+-- █████ INTERACTION KEYS & KEYBINDS
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
 Config.Keys = {
-    Interact = 0x760A9C6F, -- INPUT_OPEN_SATCHEL (G key on keyboard)
+    Interact = 0x760A9C6F, -- INPUT_OPEN_SATCHEL (G key on keyboard) - for prompt interaction
+}
+
+-- Keybind Configuration
+Config.Keybind = {
+    Enabled       = true,                    -- Enable/disable the storage keybind
+    Command       = 'openstorage',           -- Command name for keybind
+    DefaultKey    = 'K',                     -- Default key (can be rebound by player)
+    Description   = 'Open Nearby Storage',   -- Description shown in keybind settings
+    MaxDistance   = 5.0,                     -- Maximum distance to open storage with keybind
 }
 
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
