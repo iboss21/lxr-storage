@@ -420,7 +420,8 @@ RegisterCommand(Config.Keybind.Command, function()
 end, false)
 
 -- Register the keybind mapping (player can rebind this in their settings)
-if Config.Keybind.Enabled then
+-- Note: RegisterKeyMapping is FiveM-only and not available in RedM
+if Config.Keybind.Enabled and RegisterKeyMapping then
     RegisterKeyMapping(
         Config.Keybind.Command,
         Config.Keybind.Description,
