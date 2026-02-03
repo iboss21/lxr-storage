@@ -209,7 +209,6 @@ end
 local function openMainMenu(townKey, townLabel)
     closeAllMenus()
     
-    -- Request current slot information from server for display
     local elements = {
         { label = Lang.OpenStorage, value = 'open', desc = Lang.Choose },
         { label = Lang.UpgradeStorage, value = 'upgrade', desc = Lang.Choose },

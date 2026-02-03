@@ -54,7 +54,6 @@ Lang.Upgraded           = 'Storage upgraded! Added %d slots for $%.2f'
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
 Lang.NoNearbyStorage    = 'You are not near any storage location.'
-Lang.StorageKeybindInfo = 'Press ~INPUT_SPRINT~ to open nearby storage'
 
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 -- █████ ERROR STRINGS
