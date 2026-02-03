@@ -377,7 +377,7 @@ local function findNearestStorage()
     local ped = PlayerPedId()
     local pcoords = GetEntityCoords(ped)
     local nearestTown = nil
-    local nearestDist = Config.Keybind.MaxDistance or 5.0
+    local nearestDist = Config.Keybind.MaxDistance
     
     for _, town in ipairs(Config.Towns) do
         local c = town.coords
@@ -393,7 +393,7 @@ local function findNearestStorage()
     return nearestTown, nearestDist
 end
 
-RegisterCommand(Config.Keybind.Command or 'openstorage', function()
+RegisterCommand(Config.Keybind.Command, function()
     if not Config.Keybind.Enabled then
         return
     end
@@ -421,10 +421,10 @@ end, false)
 -- Register the keybind mapping (player can rebind this in their settings)
 if Config.Keybind.Enabled then
     RegisterKeyMapping(
-        Config.Keybind.Command or 'openstorage',
-        Config.Keybind.Description or 'Open Nearby Storage',
+        Config.Keybind.Command,
+        Config.Keybind.Description,
         'keyboard',
-        Config.Keybind.DefaultKey or 'K'
+        Config.Keybind.DefaultKey
     )
     
     if Config.Debug.Enable then
