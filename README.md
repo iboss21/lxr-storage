@@ -64,6 +64,8 @@ LXR-Storage is a sophisticated multi-framework storage system designed for RedM 
 - **⚡ Performance Optimized** - 0.00-0.01ms idle, 0.02-0.05ms active
 - **👤 Character-Specific** - Each character has individual slot upgrades per town
 - **🗺️ Map Integration** - Blips and NPCs at all storage locations
+- **🎮 Flexible Access** - Keybind (K) or NPC interaction (G) to open storage
+- **⌨️ Customizable Keybind** - Rebindable in-game, configurable distance
 - **🌍 Fully Localized** - Multi-language support system
 
 ### 📊 Technical Specifications
@@ -160,6 +162,15 @@ Config.Storage = {
     PricePerSlot    = 0.30,     -- Price per slot
 }
 
+-- Keybind configuration
+Config.Keybind = {
+    Enabled       = true,                    -- Enable/disable the storage keybind
+    Command       = 'openstorage',           -- Command name
+    DefaultKey    = 'K',                     -- Default key (rebindable)
+    Description   = 'Open Nearby Storage',   -- Shown in settings
+    MaxDistance   = 5.0,                     -- Max distance to storage
+}
+
 -- Item-based currency for LXR/RSG
 Config.ItemCurrency = {
     Enabled       = true,        -- Enable item-based currency
@@ -202,13 +213,20 @@ Comprehensive documentation is available in the `docs/` folder:
 
 ### For Players
 
-1. **Access Storage**
+1. **Access Storage (Two Methods)**
+   
+   **Method 1: Using Keybind**
+   - Stand within 5 meters of any storage location
+   - Press `K` (default, rebindable in settings)
+   - Storage menu will open automatically
+   
+   **Method 2: Using Prompt**
    - Visit any storage location (marked on map)
-   - Press `G` near the storage clerk
+   - Press `G` near the storage clerk when prompted
    - Select "Open Storage" from menu
 
 2. **Upgrade Storage**
-   - Access storage menu
+   - Access storage menu (using either method above)
    - Select "Upgrade Storage"
    - Enter desired number of slots
    - Confirm purchase
@@ -217,6 +235,11 @@ Comprehensive documentation is available in the `docs/` folder:
    - Each town has independent storage
    - Upgrades apply to current character only
    - Storage is not shared between towns
+
+4. **Keybind Settings**
+   - Press ESC → Settings → Keybinds → FiveM
+   - Find "Open Nearby Storage"
+   - Rebind to your preferred key
 
 ### For Administrators
 
@@ -234,6 +257,22 @@ exports['lxr-storage']:GetAllTowns()
 ## ████████████████████████████████████████████████████████████████████████████████████████
 ## 🔧 CUSTOMIZATION
 ## ████████████████████████████████████████████████████████████████████████████████████████
+
+### Customize Keybind
+
+```lua
+-- config/config.lua
+Config.Keybind = {
+    Enabled       = true,        -- Enable or disable keybind
+    Command       = 'openstorage', -- Command name
+    DefaultKey    = 'K',         -- Default key (J, L, etc.)
+    Description   = 'Open Nearby Storage',
+    MaxDistance   = 5.0,         -- Increase/decrease range
+}
+
+-- To disable keybind completely:
+Config.Keybind.Enabled = false
+```
 
 ### Add New Locations
 

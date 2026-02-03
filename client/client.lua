@@ -367,6 +367,76 @@ CreateThread(function()
 end)
 
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+-- █████ KEYBIND SYSTEM
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
+
+local keybindCooldown = 0
+local KEYBIND_COOLDOWN_MS = 1000 -- 1 second cooldown to prevent spam
+
+local function findNearestStorage()
+    local ped = PlayerPedId()
+    local pcoords = GetEntityCoords(ped)
+    local nearestTown = nil
+    local nearestDist = math.huge
+    local maxDist = Config.Keybind.MaxDistance
+    
+    for _, town in ipairs(Config.Towns) do
+        local c = town.coords
+        if c and c.x and c.y and c.z then
+            local dist = #(pcoords - vector3(c.x, c.y, c.z))
+            if dist < nearestDist and dist <= maxDist then
+                nearestDist = dist
+                nearestTown = town
+            end
+        end
+    end
+    
+    return nearestTown, nearestDist
+end
+
+RegisterCommand(Config.Keybind.Command, function()
+    if not Config.Keybind.Enabled then
+        return
+    end
+    
+    -- Check cooldown
+    local currentTime = GetGameTimer()
+    if currentTime - keybindCooldown < KEYBIND_COOLDOWN_MS then
+        return
+    end
+    keybindCooldown = currentTime
+    
+    local nearestTown, distance = findNearestStorage()
+    
+    if nearestTown then
+        DebugPrint(('Opening storage for %s via keybind (distance: %.2fm)'):format(nearestTown.key, distance))
+        openMainMenu(nearestTown.key, nearestTown.label)
+    else
+        Framework.Notify(Lang.NoNearbyStorage, 'error')
+        if Config.Debug.Enable then
+            DebugPrint('No storage location within keybind range')
+        end
+    end
+end, false)
+
+-- Register the keybind mapping (player can rebind this in their settings)
+if Config.Keybind.Enabled then
+    RegisterKeyMapping(
+        Config.Keybind.Command,
+        Config.Keybind.Description,
+        'keyboard',
+        Config.Keybind.DefaultKey
+    )
+    
+    if Config.Debug.Enable then
+        CreateThread(function()
+            Wait(2000)
+            DebugPrint(('Keybind registered: Press %s to open nearby storage'):format(Config.Keybind.DefaultKey))
+        end)
+    end
+end
+
+-- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 -- █████ EVENT HANDLERS
 -- ████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
